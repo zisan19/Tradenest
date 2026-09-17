@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Poppins:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gradient-start: #4F46E5;
+  --gradient-end: #7C3AED;
+  --accent: #06B6D4;
+  --success: #10B981;
+  --warning: #F59E0B;
+}
+
+:root {
+  color-scheme: light;
+  color: #0B1220;
+  background-color: #FAFAFC;
+}
+
+body {
+  @apply bg-bg text-secondary antialiased;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  min-width: 320px;
+}
+
+.card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.65));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.5);
+  @apply rounded-3xl shadow-lg p-6;
+}
+
+.mesh-background {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(99, 102, 241, 0.2), transparent 30%),
+    radial-gradient(circle at 86% 12%, rgba(6, 182, 212, 0.16), transparent 28%),
+    radial-gradient(circle at 70% 88%, rgba(124, 58, 237, 0.18), transparent 32%),
+    #f8f8fc;
+}
+
+.hero-grid {
+  background-image: linear-gradient(rgba(79, 70, 229, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 70, 229, 0.06) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+
+.gradient-text {
+  background: linear-gradient(110deg, var(--gradient-start), var(--gradient-end) 62%, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-button {
+  background: linear-gradient(110deg, var(--gradient-start), var(--gradient-end));
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.24);
+}
+
+.gradient-button:hover {
+  background-position: 100% 0;
+  box-shadow: 0 16px 34px rgba(79, 70, 229, 0.3);
+}
+
+.shimmer {
+  background: linear-gradient(90deg, rgba(226,232,240,.45), rgba(255,255,255,.9), rgba(226,232,240,.45));
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+
+@keyframes shimmer {
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(6, 182, 212, 0.55);
+  outline-offset: 3px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
