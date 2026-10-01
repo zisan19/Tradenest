@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { FiArrowUpRight, FiCheckCircle, FiPackage, FiHeart, FiShoppingBag } from 'react-icons/fi'
 import { useCart } from '../context/CartContext'
+import { imageUrl } from './dashboard/api'
 
 export default function ProductCard({ product }) {
   const { addItem } = useCart()
@@ -48,7 +49,7 @@ export default function ProductCard({ product }) {
         {/* Image Container with Zoom & Gradient Reveal */}
         <div className="relative h-52 w-full overflow-hidden rounded-xl bg-slate-100 shadow-inner sm:h-48">
           <motion.img
-            src={product.image_url || '/placeholder.png'}
+            src={imageUrl(product.image_url) || '/placeholder.png'}
             alt={product.name}
             className="h-full w-full object-cover will-change-transform"
             whileHover={{ scale: 1.08 }}

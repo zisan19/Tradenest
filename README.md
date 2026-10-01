@@ -26,11 +26,11 @@ TradeNest is a full-stack B2B wholesale marketplace for discovering products, co
 
 ### Role capabilities
 
-- **Admin:** authenticated admin dashboard route; backend user, category, product, order, and dashboard-stat authorization where corresponding API operations exist.
-- **Supplier / Manufacturer:** supplier dashboard route; backend product CRUD and supplier-order authorization.
+- **Admin:** sidebar-based Admin Console with platform overview (live stats, revenue/order trend, signup growth, activity feed), user management (search, role changes, animated suspend/activate switch), supplier & product approval queue (animated approve/reject with reason, pending-count badge), category management (icon + colour tag picker), platform-wide order oversight, platform analytics (revenue by category, top suppliers, status mix), and an audit trail of privileged actions.
+- **Supplier / Manufacturer:** sidebar-based Supplier Hub with overview (KPI cards with count-up animation and trend indicator, 14-day revenue chart, recent orders), product management (server-paginated table, add/edit modal with drag-and-drop image preview, delist/relist toggle, soft delete with confirmation, stock badges, filters), order pipeline (Kanban board + list view with forward-only status advancement and animated stepper detail), analytics (best sellers, status donut, revenue by category, date-range filter), and store settings (company profile, logo upload, read-only verification badge).
 - **Retailer:** retailer dashboard route; public product discovery plus authenticated order placement and buyer order access.
 
-The admin and supplier frontend dashboard pages currently provide presentation shells, while the corresponding backend APIs contain the implemented authorization and CRUD surfaces. No unsupported workflow is represented as complete.
+Both dashboards share a common component library (`AnimatedCounter`, `StatCard`, `DataTable`, `StatusBadge`, `ConfirmModal`, `OrderStepper`, `Chart` wrappers, `DashboardLayout`) with consistent animated sidebar navigation, loading skeletons, empty/error states, confirmation modals for destructive actions, and an animated 403 page for role-guarded routes. Backend authorization remains the authoritative security boundary for every endpoint.
 
 ### Analytics and UI
 
@@ -107,10 +107,11 @@ TradeNest/
 │   │   ├── database.py          # SQLAlchemy engine, session, and Base
 │   │   ├── deps.py              # Database dependency helper
 │   │   ├── main.py              # FastAPI app, CORS, routers, startup seeding
-│   │   ├── models.py            # SQLAlchemy models and refresh-token table
-│   │   ├── sample_data.py       # Demo users, categories, and products
+│   │   ├── migrations.py        # Idempotent column migrations for existing SQLite DBs
+│   │   ├── models.py            # SQLAlchemy models (incl. AuditLog, supplier profile fields)
+│   │   ├── sample_data.py       # Demo users (incl. pending supplier), products, orders
 │   │   ├── schemas.py            # Pydantic request/response models
-│   │   └── routers/              # Auth, users, categories, products, orders, dashboard
+│   │   └── routers/              # Auth, users, categories, products, orders, dashboard, cart, payments, supplier, admin
 │   ├── alembic/
 │   │   ├── env.py               # Alembic metadata and database configuration
 │   │   └── versions/             # Database migration revisions
@@ -123,8 +124,11 @@ TradeNest/
 │   │   ├── api/                 # Axios client
 │   │   ├── auth/                # Centralized role definitions and mapping
 │   │   ├── components/          # Shared UI, motion, loading, and guard components
+│   │   ├── components/dashboard/# Reusable dashboard kit (StatCard, DataTable, Chart, layout, etc.)
 │   │   ├── context/             # Authentication context
 │   │   ├── pages/               # Public, dashboard, auth, and product pages
+│   │   ├── pages/supplier/      # Supplier dashboard tab pages
+│   │   ├── pages/admin/         # Admin dashboard tab pages
 │   │   └── styles/              # Tailwind entry point and design utilities
 │   ├── package.json
 │   ├── package-lock.json
@@ -198,7 +202,15 @@ python seed_demo.py
 Set-Location ..
 ```
 
-The script is idempotent: it creates missing demo users, categories, products, and sample orders without overwriting existing records. Demo credentials are listed below and are for local development only.
+The script is idempotent: it creates missing demo users, categories, products, and sample orders without overwriting existing records. It also applies the lightweight column migrations, so an existing local database is upgraded in place. Demo credentials are listed below and are for local development only.
+
+| Role | Email | Password | Notes |
+| --- | --- | --- | --- |
+| Admin | `admin@tradenest.com` | `adminpass` | Full Admin Console access |
+| Supplier | `supplier@tradenest.com` | `supplierpass` | Verified, 4 products, order history |
+| Supplier | `global@tradenest.com` | `globalpass` | Verified second supplier for ownership tests |
+| Supplier | `newcraft@tradenest.com` | `newcraftpass` | **Pending approval** — appears in the Admin review queue |
+| Buyer | `buyer@tradenest.com` | `buyerpass` | Retailer with orders across both suppliers |
 
 ## Running the Application
 
@@ -268,6 +280,15 @@ The backend exposes these main route groups:
 - `/api/products`: public listing/details and supplier/admin CRUD authorization
 - `/api/orders`: create, buyer listing, supplier listing, status updates, and admin recent orders
 - `/api/dashboard/stats`: authenticated role-specific aggregate statistics
+- `/api/supplier`: supplier dashboard — stats (`GET /api/supplier/dashboard/stats`), product CRUD with ownership checks and soft delete (`GET/POST /api/supplier/products`, `PATCH/DELETE /api/supplier/products/{id}`), order listing and forward-only status pipeline (`GET /api/supplier/orders`, `PATCH /api/supplier/orders/{id}/status`), analytics with date filter, and store profile
+- `/api/admin`: admin dashboard — platform stats, user management (`PATCH /api/admin/users/{id}/status`, `/role`), supplier & product approval queue (approve/reject with reason), category CRUD, platform-wide order oversight with filters, analytics, and audit logs
+
+### Security enforcement
+
+- Supplier product/order mutations verify ownership server-side (`Product.supplier_id` / order item ownership); a mismatching id returns 403/404 regardless of what the client sends.
+- Every `/api/admin` endpoint requires role `admin` through a FastAPI dependency (`require_admin`); hiding UI is never treated as access control.
+- Sensitive admin actions are rate-limited per admin account, and approvals, rejections, suspensions, role changes and category edits are recorded in the `AuditLog` table (`GET /api/admin/audit-logs`).
+- All request bodies are validated with Pydantic schemas; React renders data as text (no `dangerouslySetInnerHTML`), preventing XSS from user-provided content.
 
 ## Analytics
 
@@ -314,8 +335,8 @@ The frontend build currently emits a non-blocking Vite warning that the main Jav
 
 ## Known Limitations
 
-- Admin and supplier dashboard pages are currently presentation shells; their backend authorization and several API CRUD surfaces exist, but complete frontend management workflows are not implemented.
-- Historical analytics and detailed product/order analytics are demo data until backend analytics endpoints are added.
+- Product and logo image uploads store a local preview/object URL on the record rather than uploading to external object storage; wire an S3/CDN backend for production use.
+- The admin rate limiter and audit trail are in-memory/SQLite based, appropriate for the demo scope; a production deployment would move rate limiting to the API edge and audit logs to append-only storage.
 - The frontend does not currently run automatic access-token refresh through an Axios interceptor, although backend refresh-token rotation and revocation are implemented.
 - Refresh tokens are returned in the API response and are not yet moved to an HTTP-only cookie.
 - SQLite and the in-memory auth rate-limit state are appropriate for a university/demo deployment but need infrastructure changes for multi-process production scaling.

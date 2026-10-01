@@ -28,11 +28,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const status = error.response?.status
-    const url = error.config?.url
-    const detail = error.response?.data?.detail || error.message
+    const status = error.response?.status   //401 not found
+    const url = error.config?.url    //404 not found
+    const detail = error.response?.data?.detail || error.message    //500
     console.warn(`[API Error] ${status || 'Network'} on ${url}:`, detail)
-
+    //[API Error] 401 on /api/users/me: Could not validate credentials
+    
     // Optional: Clear token if session is decisively unauthorized on protected paths
     if (status === 401 && url !== '/api/auth/login' && url !== '/api/auth/register') {
       console.warn('Session expired or unauthorized. Clearing stored token.')

@@ -11,7 +11,7 @@ import {
   FiShield,
   FiPackage,
   FiAlertCircle
-} from 'react-icons/fi'
+} from 'react-icons/fi'    //took from Feather Icons
 import { useCart } from '../../context/CartContext'
 
 export default function CartDrawer() {

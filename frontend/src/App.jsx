@@ -21,6 +21,7 @@ import { AnimatePresence, MotionConfig } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
 import PageTransition from './components/PageTransition'
 import ProtectedRoute from './components/ProtectedRoute'
+import AccessDenied from './components/dashboard/AccessDenied'
 import { ROLES } from './auth/roles'
 
 export default function App() {
@@ -53,17 +54,17 @@ export default function App() {
                       }
                     />
                     <Route
-                      path="/supplier"
+                      path="/supplier/*"
                       element={
-                        <ProtectedRoute roles={[ROLES.SUPPLIER]}>
+                        <ProtectedRoute roles={[ROLES.SUPPLIER]} forbiddenElement={<AccessDenied />}>
                           <SupplierDashboard />
                         </ProtectedRoute>
                       }
                     />
                     <Route
-                      path="/admin"
+                      path="/admin/*"
                       element={
-                        <ProtectedRoute roles={[ROLES.ADMIN]}>
+                        <ProtectedRoute roles={[ROLES.ADMIN]} forbiddenElement={<AccessDenied />}>
                           <AdminDashboard />
                         </ProtectedRoute>
                       }

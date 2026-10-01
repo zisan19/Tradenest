@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { FiSearch, FiShoppingBag, FiMenu, FiX, FiChevronDown, FiUser } from 'react-icons/fi'
+import { FiGrid, FiSearch, FiShoppingBag, FiMenu, FiX, FiChevronDown, FiUser } from 'react-icons/fi'
 import { AnimatePresence, motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 import { ROLE_LABELS, ROLES } from '../auth/roles'
 import { useCart } from '../context/CartContext'
@@ -12,6 +12,16 @@ export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
   const shouldReduceMotion = useReducedMotion()
+
+  // Role-gated dashboard entry button, shown ONLY for the matching role
+  const dashboardEntry =
+    role === ROLES.SUPPLIER
+      ? { label: 'Supplier Dashboard', to: '/supplier' }
+      : role === ROLES.ADMIN
+      ? { label: 'Admin Dashboard', to: '/admin' }
+      : role === ROLES.RETAILER
+      ? { label: 'My Dashboard', to: '/dashboard' }
+      : null
 
   // Live continuous scroll transforms
   const { scrollY } = useScroll()
@@ -174,6 +184,17 @@ export default function Nav() {
 
             {user ? (
               <div className="flex items-center gap-3">
+                {/* Role-gated dashboard button — suppliers see "Supplier Dashboard", admins "Admin Dashboard" */}
+                {dashboardEntry && (
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="hidden sm:block">
+                    <Link
+                      to={dashboardEntry.to}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-indigo-200/60 transition hover:shadow-lg"
+                    >
+                      <FiGrid size={13} /> {dashboardEntry.label}
+                    </Link>
+                  </motion.div>
+                )}
                 <div className="hidden text-right text-xs font-medium text-slate-600 lg:block">
                   <span className="block font-bold text-slate-900 truncate max-w-[150px]">
                     {user.full_name || user.email}
@@ -261,17 +282,13 @@ export default function Nav() {
                   </span>
                 )}
               </button>
-              {user && (
+              {user && dashboardEntry && (
                 <Link
                   onClick={() => setMobileOpen(false)}
-                  to={roleHome}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600"
+                  to={dashboardEntry.to}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-indigo-700 hover:bg-indigo-50"
                 >
-                  {role === ROLES.ADMIN
-                    ? 'Admin workspace'
-                    : role === ROLES.SUPPLIER
-                    ? 'Supplier workspace'
-                    : 'Dashboard'}
+                  <FiGrid className="h-4 w-4" /> {dashboardEntry.label}
                 </Link>
               )}
               {!user && (

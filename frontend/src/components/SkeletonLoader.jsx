@@ -14,7 +14,7 @@ export function ShimmerBox({ className = '' }) {
                 x: ['-100%', '100%'],
               }
         }
-        transition={{
+        transition={{ 
           duration: 1.6,
           repeat: Infinity,
           ease: 'easeInOut',

@@ -16,6 +16,7 @@ import {
 import { motion } from 'framer-motion'
 import { ShimmerBox } from '../components/SkeletonLoader'
 import { useCart } from '../context/CartContext'
+import { imageUrl } from '../components/dashboard/api'
 import toast from 'react-hot-toast'
 
 export default function ProductDetails() {
@@ -130,7 +131,7 @@ export default function ProductDetails() {
         <div>
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm group">
             <img
-              src={product.image_url || '/placeholder.png'}
+              src={imageUrl(product.image_url) || '/placeholder.png'}
               alt={product.name}
               className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
               onError={(e) => {
@@ -145,7 +146,7 @@ export default function ProductDetails() {
           <div className="mt-4 grid grid-cols-3 gap-3">
             <div className="rounded-xl border-2 border-emerald-500 p-1 overflow-hidden">
               <img
-                src={product.image_url || '/placeholder.png'}
+                src={imageUrl(product.image_url) || '/placeholder.png'}
                 alt="Product preview"
                 className="aspect-square w-full rounded-lg object-cover"
               />

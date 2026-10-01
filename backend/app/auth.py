@@ -121,7 +121,7 @@ def get_current_user_from_refresh(token: str):
         return {"user_id": user_id, "jti": jti}
     except JWTError:
         return None
-
+    
 
 def require_role(role: str):
     def _require_role(current_user: models.User = Depends(get_current_user)):
